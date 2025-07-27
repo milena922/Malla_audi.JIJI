@@ -4,10 +4,122 @@
   <meta charset="UTF-8">
   <title>Malla Interactiva</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      padding: 20px;
+    }
+
+    #malla {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .semestre {
+      border: 2px solid #aaa;
+      padding: 10px;
+      width: 300px;
+      background-color: #fff;
+    }
+
+    .semestre h2 {
+      font-size: 1.2em;
+      text-align: center;
+    }
+
+    .ramo {
+      margin: 5px 0;
+      padding: 5px;
+      border-radius: 5px;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .pendiente {
+      background-color: #ffb6c1;
+    }
+
+    .aprobado {
+      background-color: #9370db;
+      text-decoration: line-through;
+      color: white;
+    }
+
+    .bloqueado {
+      background-color: #d3d3d3;
+      color: #666;
+      cursor: not-allowed;
+    }
+  </style>
 </head>
 <body>
   <h1>Malla Interactiva</h1>
   <div id="malla"></div>
-  <script src="script.js"></script>
+  <script>
+    const ramos = [
+      { codigo: "R1", nombre: "GESTIÓN Y EMPRESA (6)", semestre: 1, prerequisitos: [] },
+      { codigo: "R2", nombre: "METODOS MATEMATICOS I (6)", semestre: 1, prerequisitos: [] },
+      { codigo: "R3", nombre: "INTRODUCCIÓN A LA ECONOMÍA (6)", semestre: 1, prerequisitos: [] },
+      { codigo: "R4", nombre: "TECNOLOGÍAS Y SISTEMAS DE INFORMACIÓN (6)", semestre: 1, prerequisitos: [] },
+      { codigo: "R5", nombre: "INGLÉS (4)", semestre: 1, prerequisitos: [] },
+      { codigo: "R6", nombre: "ENTORNO SOCIAL Y PROFESIONAL (4)", semestre: 2, prerequisitos: [] },
+      { codigo: "R7", nombre: "INTRODUCCIÓN A LA MICROECONOMÍA (6)", semestre: 2, prerequisitos: ["R3"] },
+      { codigo: "R8", nombre: "CONTABILIDAD I (6)", semestre: 2, prerequisitos: ["R1"] },
+      { codigo: "R9", nombre: "APLICACIONES DE MANEJO DE DATOS (6)", semestre: 2, prerequisitos: ["R4"] },
+      { codigo: "R10", nombre: "METODOS MATEMATICOS II (6)", semestre: 2, prerequisitos: ["R2"] },
+      { codigo: "R11", nombre: "INGLÉS I (4)", semestre: 2, prerequisitos: ["R5"] },
+      // Puedes seguir agregando más ramos según los datos proporcionados...
+    ];
+
+    let aprobados = new Set();
+
+    function crearMalla() {
+      const malla = document.getElementById("malla");
+      malla.innerHTML = "";
+
+      const semestres = [...new Set(ramos.map(r => r.semestre))].sort();
+
+      semestres.forEach(s => {
+        const contenedor = document.createElement("div");
+        contenedor.className = "semestre";
+        contenedor.innerHTML = `<h2>Semestre ${s}</h2>`;
+
+        const ramosSemestre = ramos.filter(r => r.semestre === s);
+        ramosSemestre.forEach(ramo => {
+          const div = document.createElement("div");
+          div.textContent = ramo.nombre;
+          div.classList.add("ramo");
+
+          const requisitosCumplidos = ramo.prerrequisitos.every(pr => aprobados.has(pr));
+
+          if (!requisitosCumplidos) {
+            div.classList.add("bloqueado");
+          } else if (aprobados.has(ramo.codigo)) {
+            div.classList.add("aprobado");
+          } else {
+            div.classList.add("pendiente");
+          }
+
+          div.addEventListener("click", () => {
+            if (!requisitosCumplidos) return;
+            if (aprobados.has(ramo.codigo)) {
+              aprobados.delete(ramo.codigo);
+            } else {
+              aprobados.add(ramo.codigo);
+            }
+            crearMalla();
+          });
+
+          contenedor.appendChild(div);
+        });
+
+        malla.appendChild(contenedor);
+      });
+    }
+
+    crearMalla();
+  </script>
 </body>
 </html>
